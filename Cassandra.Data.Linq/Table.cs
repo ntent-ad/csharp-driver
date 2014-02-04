@@ -45,6 +45,9 @@ namespace Cassandra.Data.Linq
         public string Name = null;
     }
 
+    [AttributeUsageAttribute(AttributeTargets.Property | AttributeTargets.Field, Inherited = true, AllowMultiple = false)]
+    public sealed class CassandraIgnoreAttribute : Attribute {}
+
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = true, AllowMultiple = true)]
     public class PartitionKeyAttribute : Attribute
     {
