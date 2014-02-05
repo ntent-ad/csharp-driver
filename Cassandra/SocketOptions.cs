@@ -13,6 +13,8 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
+using System;
+using System.Net.Sockets;
 namespace Cassandra
 {
 
@@ -32,6 +34,8 @@ namespace Cassandra
         private bool? _tcpNoDelay;
         private int? _receiveBufferSize;
         private int? _sendBufferSize;
+        private TimeSpan _keepAliveInterval = new TimeSpan(0, 5, 0);
+
 
         /// <summary>
         ///  Creates a new <code>SocketOptions</code> instance with default values.
@@ -59,6 +63,17 @@ namespace Cassandra
         public SocketOptions SetKeepAlive(bool keepAlive)
         {
             this._keepAlive = keepAlive;
+            return this;
+        }
+
+        public TimeSpan KeepAliveInterval
+        {
+            get { return _keepAliveInterval; }
+        }
+
+        public SocketOptions SetKeepAliveInterval(TimeSpan keepAliveInterval)
+        {
+            _keepAliveInterval = keepAliveInterval;
             return this;
         }
 
@@ -115,6 +130,62 @@ namespace Cassandra
         {
             this._sendBufferSize = sendBufferSize;
             return this;
+        }
+    }
+
+    /// <summary>
+    /// Socket class extensions to set SetKeepAliveValues.
+    /// </summary>
+    public static class SocketKeepAlive
+    {
+
+// Convert tcp_keepalive C struct To C# struct
+        [
+            System.Runtime.InteropServices.StructLayout
+            (
+                System.Runtime.InteropServices.LayoutKind.Explicit
+            )
+        ]
+        unsafe struct TcpKeepAlive
+        {
+            [System.Runtime.InteropServices.FieldOffset(0)]
+            [
+                System.Runtime.InteropServices.MarshalAs
+                (
+                    System.Runtime.InteropServices.UnmanagedType.ByValArray,
+                    SizeConst = 12
+                )
+            ]
+            public fixed byte Bytes[12];
+
+            [System.Runtime.InteropServices.FieldOffset(0)]
+            public uint On_Off;
+
+            [System.Runtime.InteropServices.FieldOffset(4)]
+            public uint KeepaLiveTime;
+
+            [System.Runtime.InteropServices.FieldOffset(8)]
+            public uint KeepaLiveInterval;
+        }
+
+        public static void SetKeepAliveValues(this Socket socket, bool useKeepAlive,  uint keepAliveTimeMs, uint keepAliveIntervalMs)
+        {
+            unsafe
+            {
+                TcpKeepAlive keepAliveValues = new TcpKeepAlive();
+
+                keepAliveValues.On_Off = Convert.ToUInt32(useKeepAlive);
+                keepAliveValues.KeepaLiveTime = keepAliveTimeMs;
+                keepAliveValues.KeepaLiveInterval = keepAliveIntervalMs;
+
+                byte[] inValue = new byte[12];
+
+                for (int I = 0; I < 12; I++)
+                    inValue[I] = keepAliveValues.Bytes[I];
+
+                socket.IOControl(IOControlCode.KeepAliveValues, inValue, null);
+            }
+            
         }
     }
 }
