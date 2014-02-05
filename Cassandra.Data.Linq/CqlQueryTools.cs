@@ -42,9 +42,31 @@ namespace Cassandra.Data.Linq
             var props = tpy.GetMembers();
             foreach (var prop in props)
             {
-                if (prop is PropertyInfo || prop is FieldInfo)
+                if ((prop is PropertyInfo || prop is FieldInfo) && (!prop.GetCustomAttributes(typeof(CassandraIgnoreAttribute),true).Any()))
+                {
                     ret.Add(prop);
+                }
             }
+
+
+            // now private members *only if marked*.
+            var columnMetaAttrs = new[]
+                {
+                    typeof (ColumnAttribute), typeof (PartitionKeyAttribute), typeof (ClusteringKeyAttribute),
+                    typeof (SecondaryIndexAttribute), typeof (CounterAttribute)
+                };
+
+            props = tpy.GetMembers(BindingFlags.NonPublic | BindingFlags.Instance);
+            foreach (var prop in props)
+            {
+                if ( (prop is PropertyInfo || prop is FieldInfo) &&
+                     (prop.GetCustomAttributes(true).Any(columnMetaAttrs.Contains)) &&
+                     (!prop.GetCustomAttributes(typeof(CassandraIgnoreAttribute), true).Any()) )
+                {
+                    ret.Add(prop);
+                }
+            }
+
             ReflexionCachePF.Add(tpy, ret);
             return ret;
         }
