@@ -126,8 +126,7 @@ namespace Cassandra
             var newSock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
             if (_socketOptions.KeepAlive != null)
-                newSock.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive,
-                                        _socketOptions.KeepAlive.Value);
+                newSock.SetKeepAliveValues(_socketOptions.KeepAlive.Value, (uint)_socketOptions.KeepAliveInterval.TotalMilliseconds, (uint)_socketOptions.KeepAliveInterval.TotalMilliseconds);
             
             newSock.SendTimeout = _socketOptions.ConnectTimeoutMillis;
 

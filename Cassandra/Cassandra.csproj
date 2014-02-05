@@ -36,6 +36,7 @@
     <DocumentationFile>bin\Release\Cassandra.XML</DocumentationFile>
     <NoWarn>
     </NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>false</SignAssembly>
