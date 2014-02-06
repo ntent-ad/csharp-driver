@@ -620,7 +620,7 @@ namespace Cassandra.Data.Linq
             {
                 var row = (T)ncstr.Invoke(new object[] { });
 
-                var props = typeof(T).GetMembers();
+                var props = typeof(T).GetMembers(BindingFlags.NonPublic|BindingFlags.Public|BindingFlags.Instance);
                 foreach (var prop in props)
                 {
                     if (prop is FieldInfo || prop is PropertyInfo)
