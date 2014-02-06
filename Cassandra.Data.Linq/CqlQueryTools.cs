@@ -60,7 +60,7 @@ namespace Cassandra.Data.Linq
             foreach (var prop in props)
             {
                 if ( (prop is PropertyInfo || prop is FieldInfo) &&
-                     (prop.GetCustomAttributes(true).Any(columnMetaAttrs.Contains)) &&
+                     (prop.GetCustomAttributes(true).Select(attr=>attr.GetType()).Any(columnMetaAttrs.Contains)) &&
                      (!prop.GetCustomAttributes(typeof(CassandraIgnoreAttribute), true).Any()) )
                 {
                     ret.Add(prop);
